@@ -4,6 +4,15 @@
 #include <dirent.h>
 #include <ctype.h>
 
+char* strndup(const char* s, size_t n)
+{
+    char* new = malloc(n+1);
+    if (new) {
+        strncpy(new, s, n);
+        new[n] = '\0';
+    }
+    return new;
+}
 
 typedef 
 	enum {
@@ -14,7 +23,6 @@ typedef
 		C_EXIT,
 	}
 	command_t ;
-
 
 char * read_a_line (FILE * fp)
 {
@@ -129,7 +137,6 @@ void show_words ()
 	fclose(fp) ;
 }
 
-
 void run_test ()
 {
 	char wordbook[128] ;
@@ -178,7 +185,6 @@ void run_test ()
 
 	fclose(fp) ;
 }
-
 
 int main ()
 {
