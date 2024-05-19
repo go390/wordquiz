@@ -3,6 +3,15 @@
 #include <string.h>
 #include <dirent.h>
 #include <ctype.h>
+#include <windows.h>  // Required to use GetModuleFileName
+
+
+
+void set_working_directory(const char* path) {
+    if (chdir(path) != 0) {
+        exit(EXIT_FAILURE);
+    }
+} 
 
 
 char* strndup(const char* s, size_t n) {
@@ -16,8 +25,8 @@ char* strndup(const char* s, size_t n) {
 
 typedef 
 	enum {
-		C_ZERO,
-		C_LIST,
+		C_ZERO, 
+		C_LIST = 1,
 		C_SHOW,
 		C_TEST,
 		C_ADD, // new variable
@@ -208,7 +217,9 @@ void add_voca() {
     scanf("%s", word);
     printf("Type the meaning of the word:\n");
     printf(">");
-	getc(NULL);
+    getchar();
+    fgets(meaning, sizeof(meaning), stdin);
+    meaning[strcspn(meaning, "\n")] = 0;  
 	scanf("%s", meaning);
 
     fprintf(fp, "\"%s\" : \"%s\"\n", word, meaning);
@@ -225,6 +236,19 @@ int main ()
 {
 	
 	printf(" *** Word Quiz *** \n\n") ;
+
+	char exe_path[BUFSIZ];
+
+    if (GetModuleFileName(NULL, exe_path, BUFSIZ) == 0) { // A function that finds the current executing directory location
+        return 1;
+    }
+
+    char* last_slash = strrchr(exe_path, '\\');
+    if (last_slash != NULL) {
+        *last_slash = '\0';
+        set_working_directory(exe_path);
+    }
+
 
 	int cmd;
 	do {
