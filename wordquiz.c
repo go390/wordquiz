@@ -1,12 +1,20 @@
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
 #include <ctype.h>
 
+void delete_memory() {
+    // 메모리 해제 코드 추가
+    // read_a_line 함수에서 동적으로 할당된 메모리를 해제합니다.
+	 void* ptr = read_a_line(NULL);
+    free(ptr);
+}
 char* strndup(const char* s, size_t n)
 {
-    char* new = malloc(n+1);
+    char* new = malloc(n + 1);
     if (new) {
         strncpy(new, s, n);
         new[n] = '\0';
@@ -28,16 +36,19 @@ char* read_a_line(FILE* fp)
     static int curr = 0;
 
     if (feof(fp) && curr == buf_n - 1)
-        return 0x0;
+        return NULL;
 
-    char* s = 0x0;
+    char* s = NULL;
     size_t s_len = 0;
     do {
         int end = curr;
         while (!(end >= buf_n || !iscntrl(buf[end]))) {
             end++;
         }
-        if (curr < end && s != 0x0) {
+        if (curr < end && s != NULL) {
+            s = realloc(s, s_len + end - curr + 1);
+            strncat(s, buf + curr, end - curr);
+            s_len += end - curr;
             curr = end;
             break;
         }
@@ -46,13 +57,13 @@ char* read_a_line(FILE* fp)
             end++;
         }
         if (curr < end) {
-            if (s == 0x0) {
+            if (s == NULL) {
                 s = strndup(buf + curr, end - curr);
                 s_len = end - curr;
             } else {
                 s = realloc(s, s_len + end - curr + 1);
-                s = strncat(s, buf + curr, end - curr);
-                s_len = s_len + end - curr;
+                strncat(s, buf + curr, end - curr);
+                s_len += end - curr;
             }
         }
         if (end < buf_n) {
@@ -63,6 +74,7 @@ char* read_a_line(FILE* fp)
         buf_n = fread(buf, 1, sizeof(buf), fp);
         curr = 0;
     } while (buf_n > 0);
+
     return s;
 }
 
@@ -116,7 +128,7 @@ void show_words() {
     printf(">");
     if (fgets(wordbook, sizeof(wordbook), stdin) != NULL) {
         // 개행 문자 제거
-        wordbook[strcspn(wordbook, "\n")] = 0;
+        wordbook[strcspn(wordbook, "\n")] = '\0';
     }
 
     snprintf(filepath, sizeof(filepath), "wordbooks/%s", wordbook);
@@ -151,7 +163,7 @@ void run_test() {
     printf(">");
     if (fgets(wordbook, sizeof(wordbook), stdin) != NULL) {
         // 개행 문자 제거
-        wordbook[strcspn(wordbook, "\n")] = 0;
+        wordbook[strcspn(wordbook, "\n")] = '\0';
     }
 
     snprintf(filepath, sizeof(filepath), "wordbooks/%s", wordbook);
@@ -179,7 +191,7 @@ void run_test() {
         char answer[128];
         if (fgets(answer, sizeof(answer), stdin) != NULL) {
             // 개행 문자 제거
-            answer[strcspn(answer, "\n")] = 0;
+            answer[strcspn(answer, "\n")] = '\0';
         }
 
         if (strcmp(answer, word) == 0) {
@@ -203,37 +215,4 @@ void run_test() {
 int main() {
     printf(" *** Word Quiz *** \n\n");
 
-    int cmd;
-    do {
-        print_menu();
-
-        cmd = get_command();
-        switch (cmd) {
-            case C_LIST: {
-                list_wordbooks();
-                break;
-            }
-
-            case C_SHOW: {
-                show_words();
-                break;
-            }
-
-            case C_TEST: {
-                run_test();
-                break;
-            }
-
-            case C_EXIT: {
-                return EXIT_SUCCESS;
-            }
-
-            default: {
-                printf("Invalid command. Please try again.\n");
-                break;
-            }
-        }
-    } while (cmd != C_EXIT);
-
-    return EXIT_SUCCESS;
-}
+   
