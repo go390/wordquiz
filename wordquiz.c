@@ -13,7 +13,7 @@ void set_working_directory(const char* path) {
     }
 } 
 
-
+// clear definition of strndup
 char* strndup(const char* s, size_t n) {
     char* new = malloc(n+1);
     if (new) {
@@ -23,6 +23,7 @@ char* strndup(const char* s, size_t n) {
     return new;
 }
 
+// command type
 typedef 
 	enum {
 		C_ZERO, 
@@ -34,6 +35,7 @@ typedef
 	}
 	command_t;
 
+// read a line from a file
 char * read_a_line (FILE * fp)
 {
 	static char buf[BUFSIZ] ;
@@ -80,8 +82,7 @@ char * read_a_line (FILE * fp)
 	return s ;
 }
 
-
-
+// print menu
 void print_menu() {
 
 	printf("1. List all wordbooks\n") ;
@@ -91,6 +92,7 @@ void print_menu() {
 	printf("5. Exit\n");
 }
 
+// get input
 int get_command() {
 	int cmd ;
 
@@ -99,6 +101,7 @@ int get_command() {
 	return cmd ;
 }
 
+// print voca list
 void list_wordbooks ()
 {
 	DIR * d = opendir("wordbooks");
@@ -114,6 +117,7 @@ void list_wordbooks ()
 	printf("  ----\n") ;
 }
 
+// printing all the words in voca
 void show_words ()
 {
 	char wordbook[128] ;
@@ -145,6 +149,7 @@ void show_words ()
 	fclose(fp) ;
 }
 
+// testing with words
 void run_test ()
 {
 	char wordbook[128] ;
@@ -188,7 +193,6 @@ void run_test ()
 	}
 
 	printf("(%d/%d)\n", n_correct, n_questions) ;
-
 	printf("-----\n\n") ;
 
 	fclose(fp) ;
@@ -229,9 +233,6 @@ void add_voca() {
     printf("New vocabulary added to %s\n", wordbook);
 }
 
-
-
-
 int main ()
 {
 	
@@ -248,7 +249,6 @@ int main ()
         *last_slash = '\0';
         set_working_directory(exe_path);
     }
-
 
 	int cmd;
 	do {
@@ -281,7 +281,6 @@ int main ()
 		}
 	}
 	while (cmd != C_EXIT) ;
-
 
 	return EXIT_SUCCESS ;
 }
