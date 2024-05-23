@@ -5,15 +5,15 @@
 #include <ctype.h>
 #include <windows.h>  // Required to use GetModuleFileName
 
-void delete_memory() {
-    // 메모리 해제 코드 추가
-    // read_a_line 함수에서 동적으로 할당된 메모리를 해제합니다.
-	 void* ptr = read_a_line(NULL);
-    free(ptr);
-}
-char* strndup(const char* s, size_t n)
-{
-    char* new = malloc(n + 1);
+void set_working_directory(const char* path) {
+    if (chdir(path) != 0) {
+        exit(EXIT_FAILURE);
+    }
+} 
+
+
+char* strndup(const char* s, size_t n) {
+    char* new = malloc(n+1);
     if (new) {
         strncpy(new, s, n);
         new[n] = '\0';
@@ -21,69 +21,67 @@ char* strndup(const char* s, size_t n)
     return new;
 }
 
-void set_working_directory(const char* path) {
-    if (chdir(path) != 0) {
-        exit(EXIT_FAILURE);
-    }
-} 
+typedef 
+	enum {
+		C_ZERO, 
+		C_LIST = 1,
+		C_SHOW,
+		C_TEST,
+		C_ADD, // new variable
+		C_EXIT,
+	}
+	command_t;
 
-typedef enum {
-    C_LIST = 1,
-    C_SHOW,
-    C_TEST,
-    C_EXIT
-} command_t;
-
-char* read_a_line(FILE* fp)
+char * read_a_line (FILE * fp)
 {
-    static char buf[BUFSIZ];
-    static int buf_n = 0;
-    static int curr = 0;
+	static char buf[BUFSIZ] ;
+	static int buf_n = 0;
+	static int curr = 0;
 
-    if (feof(fp) && curr == buf_n - 1)
-        return NULL;
+	if (feof(fp) && curr == buf_n - 1) {
+		return 0;
+	}
+	char * s = 0;
+	size_t s_len = 0;
+	do {
+		int end = curr;
+		while (!(end >= buf_n || !iscntrl(buf[end]))) {
+			end++;
+		}
+		if (curr < end && s != 0x0) {
+			curr = end;
+			break;
+		}
+		curr = end;
+		while (!(end >= buf_n || iscntrl(buf[end]))) {
+			end++;
+		}
+		if (curr < end) {
+			if (s == 0x0) {
+				s = strndup(buf + curr, end - curr);
+				s_len = end - curr;
+			}
+			else {
+				s = realloc(s, s_len + end - curr + 1);
+				s = strncat(s, buf + curr, end - curr);
+				s_len = s_len + end - curr;
+			}
+		}
+		if (end < buf_n) {
+			curr = end + 1 ;
+			break ;
+		}
 
-    char* s = NULL;
-    size_t s_len = 0;
-    do {
-        int end = curr;
-        while (!(end >= buf_n || !iscntrl(buf[end]))) {
-            end++;
-        }
-        if (curr < end && s != NULL) {
-            s = realloc(s, s_len + end - curr + 1);
-            strncat(s, buf + curr, end - curr);
-            s_len += end - curr;
-            curr = end;
-            break;
-        }
-        curr = end;
-        while (!(end >= buf_n || iscntrl(buf[end]))) {
-            end++;
-        }
-        if (curr < end) {
-            if (s == NULL) {
-                s = strndup(buf + curr, end - curr);
-                s_len = end - curr;
-            } else {
-                s = realloc(s, s_len + end - curr + 1);
-                strncat(s, buf + curr, end - curr);
-                s_len += end - curr;
-            }
-        }
-        if (end < buf_n) {
-            curr = end + 1;
-            break;
-        }
-
-        buf_n = fread(buf, 1, sizeof(buf), fp);
-        curr = 0;
-    } while (buf_n > 0);
-
-    return s;
+		buf_n = fread(buf, 1, sizeof(buf), fp) ;
+		curr = 0 ;
+	} while (buf_n > 0) ;
+	return s ;
 }
 
+
+
 void print_menu() {
+
 	printf("1. List all wordbooks\n") ;
 	printf("2. Show the words in a wordbook\n") ;
 	printf("3. Test with a wordbook\n") ;
@@ -92,131 +90,108 @@ void print_menu() {
 }
 
 int get_command() {
-    int cmd;
-    char input[10];
+	int cmd ;
 
-    printf(">");
-    if (fgets(input, sizeof(input), stdin) != NULL) {
-        cmd = atoi(input);
-    } else {
-        cmd = 0; // 잘못된 입력
-    }
-    return cmd;
+	printf(">") ;
+	scanf("%d", &cmd) ;
+	return cmd ;
 }
 
-void list_wordbooks() {
-    DIR* d = opendir("wordbooks");
-    if (d == NULL) {
-        perror("Failed to open directory");
-        return;
-    }
+void list_wordbooks ()
+{
+	DIR * d = opendir("wordbooks");
+	printf("\n  ----\n") ;
+	struct dirent * wb;
+	while ((wb = readdir(d)) != NULL) {
+		if (strcmp(wb->d_name, ".") != 0 && strcmp(wb->d_name, "..") !=0) {
+			printf("  %s\n", wb->d_name) ;
+		}
+	}
+	closedir(d);
 
-    printf("\n  ----\n");
-
-    struct dirent* wb;
-    while ((wb = readdir(d)) != NULL) {
-        if (strcmp(wb->d_name, ".") != 0 && strcmp(wb->d_name, "..") != 0) {
-            printf("  %s\n", wb->d_name);
-        }
-    }
-    closedir(d);
-
-    printf("  ----\n");
+	printf("  ----\n") ;
 }
 
-void show_words() {
-    char wordbook[128];
-    char filepath[256];
+void show_words ()
+{
+	char wordbook[128] ;
+	char filepath[BUFSIZ] ;
 
-    list_wordbooks();
+	list_wordbooks() ;
 
-    printf("Type in the name of the wordbook?\n");
-    printf(">");
-    if (fgets(wordbook, sizeof(wordbook), stdin) != NULL) {
-        // 개행 문자 제거
-        wordbook[strcspn(wordbook, "\n")] = '\0';
-    }
+	printf("Type in the name of the wordbook?\n") ;
+	printf(">") ;
+	scanf("%s", wordbook) ;
 
-    snprintf(filepath, sizeof(filepath), "wordbooks/%s", wordbook);
+	sprintf(filepath, "wordbooks/%s", wordbook) ;
 
-    FILE* fp = fopen(filepath, "r");
-    if (fp == NULL) {
-        perror("Failed to open file");
-        return;
-    }
+	FILE * fp = fopen(filepath, "r") ;
 
-    printf("\n  -----\n");
-    char* line;
-    while ((line = read_a_line(fp)) != NULL) {
-        char* word = strtok(line, "\"");
-        strtok(NULL, "\"");
-        char* meaning = strtok(NULL, "\"");
+	printf("\n  -----\n") ;
+	char * line ;
+	while (line = read_a_line(fp)) {
+		char * word = strtok(line, "\"") ;
+		strtok(NULL, "\"") ;
+		char * meaning = strtok(NULL, "\"") ;
 
-        printf("  %s : %s\n", word, meaning);
+		printf("  %s : %s\n", word, meaning) ;
 
-        free(line);
-    }
-    printf("  -----\n\n");
+		free(line) ;
+	}
+	printf("  -----\n\n") ;
 
-    fclose(fp);
+	fclose(fp) ;
 }
 
-void run_test() {
-    char wordbook[128];
-    char filepath[256];
+void run_test ()
+{
+	char wordbook[128] ;
+	char filepath[BUFSIZ] ;
 
-    printf("Type in the name of the wordbook?\n");
-    printf(">");
-    if (fgets(wordbook, sizeof(wordbook), stdin) != NULL) {
-        // 개행 문자 제거
-        wordbook[strcspn(wordbook, "\n")] = '\0';
-    }
+	printf("Type in the name of the wordbook?\n") ;
+	printf(">") ;
+	scanf("%s", wordbook) ;
 
-    snprintf(filepath, sizeof(filepath), "wordbooks/%s", wordbook);
+	sprintf(filepath, "wordbooks/%s", wordbook) ;
 
-    FILE* fp = fopen(filepath, "r");
-    if (fp == NULL) {
-        perror("Failed to open file");
-        return;
-    }
+	FILE * fp = fopen(filepath, "r") ;
 
-    printf("\n-----\n");
+	printf("\n-----\n") ;
 
-    int n_questions = 0;
-    int n_correct = 0;
+	int n_questions = 0 ;
+	int n_correct = 0 ; 
 
-    char* line;
-    while ((line = read_a_line(fp)) != NULL) {
-        char* word = strtok(line, "\"");
-        strtok(NULL, "\"");
-        char* meaning = strtok(NULL, "\"");
+	char * line ;
+	while (line = read_a_line(fp)) {
+		char * word = strtok(line, "\"") ;
+		strtok(NULL, "\"") ;
+		char * meaning = strtok(NULL, "\"") ;
 
-        printf("Q. %s\n", meaning);
-        printf("?  ");
+		printf("Q. %s\n", meaning) ;
+		printf("?  ") ;
 
-        char answer[128];
-        if (fgets(answer, sizeof(answer), stdin) != NULL) {
-            // 개행 문자 제거
-            answer[strcspn(answer, "\n")] = '\0';
-        }
+		char answer[128] ;
+		scanf("%s", answer) ;
 
-        if (strcmp(answer, word) == 0) {
-            printf("- correct\n");
-            n_correct++;
-        } else {
-            printf("- wrong: %s\n", word);
-        }
+		if (strcmp(answer, word) == 0) {
+			printf("- correct\n") ;
+			n_correct++ ;
+		}
+		else {
+			printf("- wrong: %s\n", word) ;
+		}
 
-        n_questions++;
-        free(line);
-    }
+		n_questions++ ;
+		free(line) ;
+	}
 
-    printf("(%d/%d)\n", n_correct, n_questions);
+	printf("(%d/%d)\n", n_correct, n_questions) ;
 
-    printf("-----\n\n");
+	printf("-----\n\n") ;
 
-    fclose(fp);
+	fclose(fp) ;
 }
+
 
 void add_voca() {
     char wordbook[128];
@@ -251,6 +226,7 @@ void add_voca() {
 
     printf("New vocabulary added to %s\n", wordbook);
 }
+
 
 
 
@@ -300,10 +276,12 @@ int main ()
 			case C_EXIT: {
 				return EXIT_SUCCESS ;
 			}
+			default: {
+				printf("Invalid input. The range of numbers is 1 to 5. 5 is to exit.\n");
+			}
 		}
 	}
 	while (cmd != C_EXIT) ;
-
 
 	return EXIT_SUCCESS ;
 }
