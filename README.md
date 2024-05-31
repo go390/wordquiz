@@ -2,12 +2,12 @@
 
 this repository is designed to help users improve their English vocabulary through word quizzes
 
-##features
+## features
 
 * quizzes : take quizzes on various English vocabulary words
 * custom word voca : create and use custom word lists for personalized quizzes
 
-##installation
+## installation
 
 clone the repository
 
@@ -17,7 +17,7 @@ clone the repository
 </code>
 </pre>
 
-##usage
+## usage
 
 ![Alt text](https://github.com/go390/wordquiz/blob/main/image.png?raw=true)
 
@@ -27,7 +27,7 @@ clone the repository
 * Add more voca: Add more vocabulary words to a wordbook.
 * Exit: Exits the program.
 
-##contributing
+## contributing
 
 if you want to contribute in our project please follow the steps below
 
