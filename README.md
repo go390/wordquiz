@@ -2,6 +2,11 @@
 
 this repository is designed to help users improve their English vocabulary through word quizzes
 
+##features
+
+*quizzes : take quizzes on various English vocabulary words
+*custom word voca : create and use custom word lists for personalized quizzes
+
 ##installation
 
 clone the repository
