@@ -4,8 +4,8 @@ this repository is designed to help users improve their English vocabulary throu
 
 ##features
 
-*quizzes : take quizzes on various English vocabulary words
-*custom word voca : create and use custom word lists for personalized quizzes
+* quizzes : take quizzes on various English vocabulary words
+* custom word voca : create and use custom word lists for personalized quizzes
 
 ##installation
 
@@ -21,11 +21,11 @@ clone the repository
 
 ![Alt text](https://github.com/go390/wordquiz/blob/main/image.png?raw=true)
 
-*List all wordbooks: Displays a list of all available wordbooks.
-*Show the words in a wordbook: Allows you to view all words in a selected wordbook.
-*Test with a wordbook: Starts a quiz using a selected wordbook.
-*Add more voca: Add more vocabulary words to a wordbook.
-*Exit: Exits the program.
+* List all wordbooks: Displays a list of all available wordbooks.
+* Show the words in a wordbook: Allows you to view all words in a selected wordbook.
+* Test with a wordbook: Starts a quiz using a selected wordbook.
+* Add more voca: Add more vocabulary words to a wordbook.
+* Exit: Exits the program.
 
 ##contributing
 
